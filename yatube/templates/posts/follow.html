@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% load thumbnail %}
+{% block title %}
+Ваши подписки
+{% endblock %}
+{% block content %}
+  <h1>Посты авторов, на которых вы подписаны</h1>
+  {% include 'includes/switcher.html' with follow=True %}
+  {% for post in page_obj %}
+    {% include 'includes/card.html' %}
+    {% if not forloop.last %}<hr>{% endif %}
+  {% endfor %}  
+    {% include 'includes/paginator.html' %}
+{% endblock %}
