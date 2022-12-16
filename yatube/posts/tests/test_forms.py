@@ -69,7 +69,6 @@ class PostFormTests(TestCase):
                 'posts:profile', kwargs={'username': cls.post_author.username})
         }
 
-
     @classmethod
     def tearDownClass(cls):
         super().tearDownClass()
@@ -77,7 +76,6 @@ class PostFormTests(TestCase):
     def get_count_paginator_group_list(self):
         group_response = self.authorized_user.get(self.url['group_list'])
         return group_response.context['page_obj'].paginator.count
-
 
     def setUp(self):
         self.guest_user = Client()

@@ -71,6 +71,7 @@ def post_detail(request, post_id):
         'comments': comments,
     })
 
+
 @login_required
 def post_create(request):
     form = PostForm(request.POST or None)

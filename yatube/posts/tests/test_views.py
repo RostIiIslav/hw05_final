@@ -249,7 +249,6 @@ class PostPagesTests(TestCase):
         self.assertNotEqual(response_content_cached, response.content)
 
 
-
 class PaginatorViewsTest(TestCase):
     """Тестируем Paginator. Страница должна быть разбита на 10 постов"""
     user = None
@@ -275,6 +274,7 @@ class PaginatorViewsTest(TestCase):
         response = self.client.get(reverse('posts:index') + '?page=2')
         self.assertEqual(
             len(response.context.get('page_obj').object_list), NUM_PAG)
+
 
 class TestFollowViews(TestCase):
     @classmethod
