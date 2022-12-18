@@ -2,11 +2,10 @@ import tempfile
 
 from django import forms
 from django.contrib.auth import get_user_model
-from django.test import Client, TestCase
+from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.cache import cache
-from django.test import Client, override_settings, TestCase
 from django.urls import reverse
 from django.conf import settings
 
@@ -205,7 +204,9 @@ class PostPagesTests(TestCase):
                         'posts/post_detail.html',
             reverse('posts:post_create'): 'posts/post_create.html',
             reverse('posts:post_edit',
-                    kwargs={'post_id': self.post.id}): 'posts/post_create.html'
+                    kwargs={'post_id': self.post.id}):
+                        'posts/post_create.html',
+            reverse('posts:follow'): 'posts/follow.html'
         }
         for reverse_name, template in templates_pages_names.items():
             with self.subTest(reverse_name=reverse_name):
@@ -251,7 +252,6 @@ class PostPagesTests(TestCase):
 
 class PaginatorViewsTest(TestCase):
     """Тестируем Paginator. Страница должна быть разбита на 10 постов"""
-    user = None
     POSTS_COUNT = 13
 
     @classmethod

@@ -32,7 +32,7 @@ class PostURLTests(TestCase):
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
 
-        self.url_only_authorized = ('/create/', '/posts/1/edit/',)
+        self.url_only_authorized = ('/create/', '/posts/1/edit/', '/follow/')
         self.url_non_existent = ('/non_existent_page/',)
         self.url_full_list = (
             '/',
@@ -42,6 +42,7 @@ class PostURLTests(TestCase):
             '/posts/1/edit/',
             '/profile/user_test/',
             '/non_existent_page/',
+            '/follow/'
         )
 
     def test_url_for_guest(self):
@@ -118,6 +119,7 @@ class PostURLTests(TestCase):
             '/posts/1/': 'posts/post_detail.html',
             '/profile/user_test/': 'posts/profile.html',
             '/create/': 'posts/post_create.html',
+            '/follow/': 'posts/follow.html',
         }
         for i_adress, i_template in templates_url.items():
             with self.subTest(adress=i_adress):

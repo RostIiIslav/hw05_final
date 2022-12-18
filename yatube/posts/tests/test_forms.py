@@ -1,15 +1,22 @@
 from http import HTTPStatus
 
 from django.contrib.auth import get_user_model
-from django.test import Client, TestCase
+from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.conf import settings
 
 from ..models import Group, Post, Comment
+
+import shutil
+import tempfile
+
+TEMP_MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
 
 User = get_user_model()
 
 
+@override_settings(MEDIA_ROOT=TEMP_MEDIA_ROOT)
 class PostFormTests(TestCase):
     @classmethod
     def setUpClass(cls):
@@ -17,6 +24,8 @@ class PostFormTests(TestCase):
         cls.post_author = User.objects.create_user(
             username='post_author',
         )
+        cls.comm_author = User.objects.create_user(
+            username='comm_author',)
         cls.group = Group.objects.create(
             title='Тестовое название группы',
             slug='test_slug',
@@ -72,10 +81,7 @@ class PostFormTests(TestCase):
     @classmethod
     def tearDownClass(cls):
         super().tearDownClass()
-
-    def get_count_paginator_group_list(self):
-        group_response = self.authorized_user.get(self.url['group_list'])
-        return group_response.context['page_obj'].paginator.count
+        shutil.rmtree(TEMP_MEDIA_ROOT, ignore_errors=True)
 
     def setUp(self):
         self.guest_user = Client()
@@ -100,6 +106,7 @@ class PostFormTests(TestCase):
         self.assertEqual(post.text, form_data['text'])
         self.assertEqual(post.author, self.post_author)
         self.assertEqual(post.group_id, form_data['group'])
+        self.assertNotEqual(post.image.name, self.small_gif)
 
     def test_authorized_user_edit_post(self):
         """Проверка редактирования записи авторизированным автором."""
@@ -241,26 +248,24 @@ class PostFormTests(TestCase):
         self.assertEqual(Comment.objects.count(), prev_count)
 
     def test_authorized_create_comment(self):
-        """Проверка создания комментария авторизованным"""
-        if Comment.objects.count() != 0:
-            Comment.objects.all().delete()
-        self.assertEqual(Comment.objects.count(), 0, 'база не очищена')
-        prev_count = Comment.objects.count()
-        response = self.authorized_user.post(
-            self.url['comment'],
-            data=self.form_comment_data,
-            follow=True
-        )
+        """Проверка создания комментария авторизованным пользователем"""
+        comments_count = Comment.objects.count()
+        self.auth_user_comm = Client()
+        self.auth_user_comm.force_login(self.comm_author)
+        post = Post.objects.create(
+            text='Текст поста для редактирования',
+            author=self.post_author)
+        form_data = {'text': 'Тестовый коментарий'}
+        response = self.auth_user_comm.post(
+            reverse(
+                'posts:add_comment',
+                kwargs={'post_id': post.id}),
+            data=form_data,
+            follow=True)
+        comment = Comment.objects.latest('id')
+        self.assertEqual(Comment.objects.count(), comments_count + 1)
+        self.assertEqual(comment.text, form_data['text'])
+        self.assertEqual(comment.author, self.comm_author)
+        self.assertEqual(comment.post_id, post.id)
         self.assertRedirects(
-            response,
-            self.url['post_detail']
-        )
-        self.assertEqual(prev_count + 1, Comment.objects.count())
-        self.assertTrue(
-            Comment.objects.filter(text=self.form_comment_data['text'])
-            .exists()
-        )
-        self.assertEqual(
-            response.context['post'].comments.all()[0].text,
-            self.form_comment_data['text']
-        )
+            response, reverse('posts:post_detail', args={post.id}))

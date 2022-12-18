@@ -1,4 +1,8 @@
 {% extends "base.html" %}
+{% block title %}Ошибка 403
+{% endblock title %}
 {% block content %}
-  <h1>Custom CSRF check error. 403</h1>
-{% endblock %} 
+  <h1>Ошибка 403</h1>
+  <p>Доступ к странице с адресом {{ path }} запрещен!</p>
+  <a>Идите на главную</a> 
+{% endblock content %}
