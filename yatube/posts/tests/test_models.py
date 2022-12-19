@@ -115,7 +115,7 @@ class CommentModelTest(TestCase):
 
     def test_сomment_str(self):
         """Проверка __str__ у сomment."""
-        self.assertEqual(self.comment.text[:15], str(self.comment))
+        self.assertEqual(self.comment.text[:TEXT_LEN], str(self.comment))
 
     def test_сomment_verbose_name(self):
         """Проверка verbose_name у сomment."""
